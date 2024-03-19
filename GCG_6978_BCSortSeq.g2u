@@ -1,0 +1,57 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'	Author: Daniel Duncan
+'	Customer: Hamrick Engineering
+'	Program Name: Reorder Sequences in BOM Compare
+'	Date Started: 11/22/2022
+'	Description: This program reorders sequences in incoming materials in BOM Compare.  Hamrick Engineering wanted this to work with Inventor, and it will, as well as really any other incoming data stream.
+'	Quote: 13851
+'	GAP: 6978
+
+
+V.Local.iFor.Declare
+V.Local.iRows.Declare
+V.Local.sRet.Declare
+V.Local.sRow.Declare
+v.Local.iSeq.Declare
+v.Local.sRowData.Declare
+
+f.Intrinsic.Control.If(v.Caller.Hook,=,50310)
+	F.Intrinsic.BDF.Load("bdfPreload","Main-PrePopulate-bdf")
+	f.Intrinsic.BDF.Clone("bdfPreload","bdfClone")
+	
+	f.Intrinsic.BDF.ReadRowCount("bdfPreload",v.Local.iRows)
+	f.Intrinsic.Math.Sub(v.Local.iRows,1,v.Local.iRows)
+	v.Local.sRow.Redim(0,v.Local.iRows)
+	'Load the BDF into an array
+	f.Intrinsic.Control.for(V.Local.iFor,0,v.Local.iRows,1)
+		F.Intrinsic.BDF.ReadRow("bdfPreload",V.Local.iFor,V.Local.sRow(v.Local.iFor))
+	f.Intrinsic.Control.Next(V.Local.iFor)
+	
+	'Sort the array
+	f.Intrinsic.String.SortAsc(v.Local.sRow,v.Local.sRet)
+	
+	'Write the array back to the cloned BDF and save
+	v.Local.iFor.Set(0)
+	f.Intrinsic.Control.for(V.Local.iFor,0,v.Local.iRows,1)
+		'Set the sequence
+		f.Intrinsic.Math.Mult(v.Local.iFor,100,v.Local.iSeq)
+		f.Intrinsic.Math.Add(v.Local.iSeq,100,v.Local.iSeq)
+		f.Intrinsic.String.Split(v.Local.sRow(v.Local.iFor),"|~|",v.Local.sRowData)
+		v.Local.sRowData(23).Set(v.Local.iSeq)
+		f.Intrinsic.String.Join(v.Local.sRowData,"|~|",v.Local.sRow(v.Local.iFor))
+		F.Intrinsic.BDF.WriteRow("bdfClone",V.Local.sRow(v.Local.iFor))
+		
+		f.Intrinsic.BDF.SetData("bdfClone",23,v.Local.iFor,v.Local.iSeq)
+	f.Intrinsic.Control.Next(V.Local.iFor)
+	F.Intrinsic.BDF.Save("bdfClone","Main-PrePopulate-bdf")
+f.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$5$}$20.1.8328.25015$}$1
+${$6$}$dduncan$}$20221122010326827$}$r0o+00bj735YsiGsQ60YIo/Zb+26OZQGhp96SCF/cJGwkg+pB17uBgicWoJEWrbVzYTMAnfnHAQ=
+Program.Sub.Comments.End
